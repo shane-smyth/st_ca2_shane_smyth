@@ -24,6 +24,41 @@ def main():
   bins, centre = bin_and_plot_data(data)
   balanced_data = balance_data(data, bins)
   plot_balanced_data(balanced_data, centre)
+  X_train, X_valid, y_train, y_valid, image_paths = split_data(balanced_data)
+  plot_validation_training_distribution(y_train, y_valid)
+
+def  plot_validation_training_distribution(y_train, y_valid):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    axes[0].hist(y_train, bins=num_bins, width=0.05, color='blue')
+    axes[0].set_title('Training data')
+    axes[1].hist(y_valid, bins=num_bins, width=0.05, color='red')
+    axes[1].set_title('Validation data')
+    plt.show()  
+
+  
+def split_data(data):
+    image_paths, steerings = load_steering_img(os.path.join(data_dir, 'IMG'), data)
+    X_train, X_valid, y_train, y_valid = train_test_split(image_paths, steerings, test_size=0.2, random_state=77)
+    print(f"Training samples {len(X_train)}, Validation samples {len(X_valid)}")
+    return X_train, X_valid, y_train, y_valid, image_paths
+  
+
+def load_steering_img(datadir, data):
+    image_path = []
+    steerings = []
+    for i in range(len(data)):
+        indexed_data = data.iloc[i]
+        center, left, right = indexed_data['center'], indexed_data['left'], indexed_data['right']
+        image_path.append(os.path.join(datadir, center.strip()))
+        image_path.append(os.path.join(datadir, left.strip()))
+        image_path.append(os.path.join(datadir, right.strip()))
+        steerings.append(float(indexed_data['steering']))
+        steerings.append(float(indexed_data['steering']))
+        steerings.append(float(indexed_data['steering']))
+    image_paths = np.asarray(image_path)
+    steerings = np.asarray(steerings)
+    return image_paths, steerings  
+  
   
 def plot_balanced_data(balanced_data, centre):
     hist, _ = np.histogram(balanced_data['steering'], num_bins)
