@@ -15,7 +15,7 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import matplotlib.image as mpimg
 
-from image_processing import display_augmented_and_original
+from image_processing import display_augmented_and_original, batch_generator
 
 num_bins = 25
 samples_per_bin = 500
@@ -29,6 +29,9 @@ def main():
   X_train, X_valid, y_train, y_valid, image_paths = split_data(balanced_data)
   plot_validation_training_distribution(y_train, y_valid)
   display_augmented_and_original(image_paths, y_train)
+  model = nvidia_model()
+  train_and_test_model(model, X_train, y_train, X_valid, y_valid)
+
 
 def  plot_validation_training_distribution(y_train, y_valid):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
@@ -37,6 +40,51 @@ def  plot_validation_training_distribution(y_train, y_valid):
     axes[1].hist(y_valid, bins=num_bins, width=0.05, color='red')
     axes[1].set_title('Validation data')
     plt.show()  
+    
+    
+def train_and_test_model(model, X_train, y_train, X_valid, y_valid):
+    print(model.summary())
+    history = model.fit(
+      batch_generator(X_train, y_train, 100, 1), 
+      steps_per_epoch=300, 
+      epochs=20, 
+      validation_data=batch_generator(X_valid, y_valid, 300, 0), 
+      validation_steps=200, 
+      verbose=1,
+      shuffle=1,
+      )
+    model.save('basic_augmented_nvidia_model.keras')
+    # this is a regression problem so accuracy is not an appropriate metric
+    # you would have to get the steering angle exactly right for it to be
+    # conunted as accurate. As there is an infinite number of possible steering angles,
+    # this is almost imposible. Plot the loss instead
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.legend(['training', 'validation'])
+    plt.title('Loss')
+    plt.xlabel('Epoch')
+    plt.show()
+    
+    
+def nvidia_model():
+    model = Sequential()
+    model.add(Conv2D(24, (5,5), strides=(2,2), input_shape=(66, 200, 3), activation="elu"))
+    model.add(Conv2D(36, (5,5), strides=(2,2), activation="elu"))
+    model.add(Conv2D(48, (5,5), strides=(2,2), activation="elu"))
+    model.add(Conv2D(64, (3,3), activation="elu"))
+    model.add(Conv2D(64, (3,3), activation="elu"))
+    model.add(Dropout(0.3))
+    model.add(Flatten())
+    model.add(Dense(100, activation="elu"))
+    model.add(Dropout(0.3))
+    model.add(Dense(50, activation="elu"))
+    model.add(Dropout(0.3))
+    model.add(Dense(10, activation="elu"))
+    model.add(Dropout(0.3))
+    model.add(Dense(1))
+    optimizer = Adam(learning_rate = 0.001)
+    model.compile(loss='mse', optimizer = optimizer)
+    return model
 
   
 def split_data(data):
