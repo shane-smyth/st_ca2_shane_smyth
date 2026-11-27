@@ -19,7 +19,10 @@ from image_processing import display_augmented_and_original, batch_generator
 
 num_bins = 25
 samples_per_bin = 500
-data_dir = "./training_data"
+data_dirs = [
+    "./track1",
+    "./track2"
+]
 
 def main():
   data = load_data()
@@ -88,27 +91,20 @@ def nvidia_model():
 
   
 def split_data(data):
-    image_paths, steerings = load_steering_img(os.path.join(data_dir, 'IMG'), data)
+    image_paths, steerings = load_steering_img(data)
     X_train, X_valid, y_train, y_valid = train_test_split(image_paths, steerings, test_size=0.2, random_state=77)
     print(f"Training samples {len(X_train)}, Validation samples {len(X_valid)}")
     return X_train, X_valid, y_train, y_valid, image_paths
   
 
-def load_steering_img(datadir, data):
-    image_path = []
-    steerings = []
+def load_steering_img(data):
+    image_path, steerings = [], []
     for i in range(len(data)):
-        indexed_data = data.iloc[i]
-        center, left, right = indexed_data['center'], indexed_data['left'], indexed_data['right']
-        image_path.append(os.path.join(datadir, center.strip()))
-        image_path.append(os.path.join(datadir, left.strip()))
-        image_path.append(os.path.join(datadir, right.strip()))
-        steerings.append(float(indexed_data['steering']))
-        steerings.append(float(indexed_data['steering']))
-        steerings.append(float(indexed_data['steering']))
-    image_paths = np.asarray(image_path)
-    steerings = np.asarray(steerings)
-    return image_paths, steerings  
+        row = data.iloc[i]
+        for cam in ['center', 'left', 'right']:
+            image_path.append(row[cam])
+            steerings.append(float(row['steering']))
+    return np.asarray(image_path), np.asarray(steerings)  
   
   
 def plot_balanced_data(balanced_data, centre):
@@ -146,11 +142,16 @@ def bin_and_plot_data(data):
 
 def load_data():
     columns = ['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed']
-    data = pd.read_csv(os.path.join(data_dir, 'driving_log.csv'), names = columns)
-    pd.set_option('display.width', None)
-    data['center'] = data['center'].apply(path_leaf)
-    data['left'] = data['left'].apply(path_leaf)
-    data['right'] = data['right'].apply(path_leaf)
+    frames = []
+    for data_dir in data_dirs:
+        df = pd.read_csv(os.path.join(data_dir, 'driving_log.csv'), names=columns)
+        img_dir = os.path.join(data_dir, 'IMG')
+        for cam in ['center', 'left', 'right']:
+            df[cam] = df[cam].apply(lambda p: os.path.join(img_dir, path_leaf(p).strip()))
+        df["data_dir"] = os.path.basename(data_dir)
+        frames.append(df)
+    data = pd.concat(frames, ignore_index=True)
+    print(data['data_dir'].value_counts())
     return data
 
 
