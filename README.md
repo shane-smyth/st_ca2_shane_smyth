@@ -46,3 +46,7 @@ def nvidia_model():
     model.compile(loss='mse', optimizer = optimizer)
     return model
 ```
+
+## Second Model
+The code as first model but with both tracks used to train. Makes it around track 1, and almost makes it around track 2. I think i need to re-record the data for track 2 with smoother turns.
+![alt text](/images/model2.png)
