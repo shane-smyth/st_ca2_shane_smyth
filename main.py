@@ -21,7 +21,7 @@ num_bins = 25
 samples_per_bin = 500
 data_dirs = [
     "./track1",
-    "./track2"
+    "./track2Rec2"
 ]
 
 def main():
@@ -31,7 +31,7 @@ def main():
   plot_balanced_data(balanced_data, centre)
   X_train, X_valid, y_train, y_valid, image_paths = split_data(balanced_data)
   plot_validation_training_distribution(y_train, y_valid)
-  display_augmented_and_original(image_paths, y_train)
+  display_augmented_and_original(X_train, y_train)
   model = nvidia_model()
   train_and_test_model(model, X_train, y_train, X_valid, y_valid)
 

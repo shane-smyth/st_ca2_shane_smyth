@@ -50,3 +50,11 @@ def nvidia_model():
 ## Second Model
 The code as first model but with both tracks used to train. Makes it around track 1, and almost makes it around track 2. I think i need to re-record the data for track 2 with smoother turns.
 ![alt text](/images/model2.png)
+
+
+## Third Model
+Re-recorded track 2 with one lap either direction. Model cannot go around track 1 or 2. Track 1 gets stuck on the bridge, track 2 gets stuck on corners
+
+Epoch 20/20
+300/300 ━━━━━━━━━━━━━━━━━━━━ 187s 625ms/step - loss: 0.1187 - val_loss: 0.0902
+![alt text](/images/model3.png)
