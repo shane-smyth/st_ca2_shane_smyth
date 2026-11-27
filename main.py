@@ -15,6 +15,8 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import matplotlib.image as mpimg
 
+from image_processing import display_augmented_and_original
+
 num_bins = 25
 samples_per_bin = 500
 data_dir = "./training_data"
@@ -26,6 +28,7 @@ def main():
   plot_balanced_data(balanced_data, centre)
   X_train, X_valid, y_train, y_valid, image_paths = split_data(balanced_data)
   plot_validation_training_distribution(y_train, y_valid)
+  display_augmented_and_original(image_paths, y_train)
 
 def  plot_validation_training_distribution(y_train, y_valid):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
